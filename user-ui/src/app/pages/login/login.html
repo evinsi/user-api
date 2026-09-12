@@ -1,0 +1,19 @@
+<div class="login-page">
+  <form class="login-card" (ngSubmit)="submit()">
+    <h1>Giriş Yap</h1>
+
+    <label for="email">Email</label>
+    <input id="email" type="email" name="email" [(ngModel)]="email" required />
+
+    <label for="password">Şifre</label>
+    <input id="password" type="password" name="password" [(ngModel)]="password" required />
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Giriş yapılıyor...' : 'Giriş Yap' }}
+    </button>
+  </form>
+</div>

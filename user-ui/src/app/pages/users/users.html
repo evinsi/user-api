@@ -1,0 +1,53 @@
+<div class="users-page">
+  <header class="users-header">
+    <h1>Kullanıcılar</h1>
+    <button class="logout-btn" (click)="logout()">Çıkış</button>
+  </header>
+
+  <!-- Ekle / Düzenle formu -->
+  <form class="user-form" (ngSubmit)="save()">
+    <input name="name" placeholder="Ad" [(ngModel)]="name" required />
+    <input name="email" type="email" placeholder="Email" [(ngModel)]="email" required />
+    @if (!editingId()) {
+      <input name="password" type="password" placeholder="Şifre" [(ngModel)]="password" required />
+    }
+    <button type="submit" class="primary">{{ editingId() ? 'Kaydet' : 'Ekle' }}</button>
+    @if (editingId()) {
+      <button type="button" class="cancel" (click)="resetForm()">İptal</button>
+    }
+  </form>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="info">Yükleniyor...</p>
+  } @else if (users().length === 0) {
+    <p class="info">Kayıtlı kullanıcı yok.</p>
+  } @else {
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Ad</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users(); track user.id) {
+          <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role }}</td>
+            <td class="actions">
+              <button (click)="edit(user)">Düzenle</button>
+              <button class="danger" (click)="remove(user)">Sil</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

@@ -1,0 +1,49 @@
+# Production (sunucu) için compose dosyası.
+# Farkları: secret'lar .env'den gelir, Mongo/Redis/API portları DIŞARI AÇILMAZ
+# (sadece iç ağ), mongo-express yok, API Production modunda, UI 80 portunda.
+#
+# Çalıştırma (sunucuda):
+#   docker compose -f docker-compose.prod.yml up -d --build
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo-data:/data/db
+    # ports YOK → Mongo dışarıdan erişilemez, sadece iç ağda
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    # ports YOK → Redis dışarıdan erişilemez
+
+  api:
+    build: ./UserApi
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      MongoDbSettings__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017/?authSource=admin
+      Redis__ConnectionString: redis:6379,abortConnect=false
+      JwtSettings__Key: ${JWT_KEY}
+    depends_on:
+      - mongo
+      - redis
+    # ports YOK → API doğrudan erişilemez; UI'daki Nginx /api ile içeri yönlendirir
+
+  ui:
+    build: ./user-ui
+    restart: unless-stopped
+    ports:
+      - "80:80"   # tek dışarı açık kapı: http://SUNUCU_IP
+    depends_on:
+      - api
+
+volumes:
+  mongo-data:
+  redis-data:
